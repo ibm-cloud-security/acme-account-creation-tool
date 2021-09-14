@@ -12,15 +12,7 @@ To learn more about ordering and managing certificates with Secrets Manager, che
 ## Prerequisites
 
 - [Download and install Go](https://golang.org/doc/install).
-- Create a private key in PKCS#8 format to provide as the credential for your certificate authority account.
 
-    You can use the `openssl` utility to generate a private key. For example: 
-
-    ```
-    openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in keypair.pem -out pkcs8.key
-    ```
-
-    For more information, check out the [OpenSSL documentation](https://www.openssl.org/docs/man1.0.2/man1/openssl-pkcs8.html). 
 
 ## Installation
 
@@ -44,19 +36,15 @@ To learn more about ordering and managing certificates with Secrets Manager, che
 
 ```
 Usage of ./acme-account:
--e, --email   email to be registered for the account  
-
 -o, --outputFilenamePrefix   file name prefix to store the account details  
+
+[-e], [--email]  email to be registered for the account  
 
 [-d], [--directoryURL]  acme directory URL of the CA. Following alias are defined: "letsencrypt-prod", "letsencrypt-stage"  (default letsencrypt-prod) 
 
-[-k], [--privateKeyPath]  path to the private key in PKCS8 PEM format to be used. If an account with this private key exists, the account will be retrieved  
+[-g], [--keyTypeToGenerate]  key type to generate. Supported values - rsa2048, rsa3072, rsa4096, ec256, ec384 (default ec256) 
 
-[-c], [--caRootCertPath]  path to a custom CA root certificate. Only required for private/testing ACME CA's like pebble  
-
-[-i], [--eabKeyIDFlag]  key ID for external account binding  
-
-[-h], [--eabHMACKeyFlag]  HMAC key for external account binding  
+[-k], [--privateKeyPath]  path to the private key in PKCS1/PKCS8 PEM format to be used. If an account with this private key exists, the account will be retrieved. This flag overrides the -g flag  
 ```
  
 A successful request registers a new account and stores the account credentials in `<outputFilenamePrefix>-private-key.pem`. Your account information is stored in  `<outputFilenamePrefix>-account-info.json`.
@@ -71,12 +59,12 @@ Use the private key that is generated for your account to [add a certificate aut
 
 Create an account that targets the Let's Encrypt production environment.
 ```
-./acme-account -e <email> -o my-letsencrypt -d letsencrypt-prod -k pkcs8.key
+./acme-account -o my-letsencrypt -d letsencrypt-prod
 ```
 
 Create an account that targets the Let's Encrypt staging environment.
 ```
-./acme-account -e <email> -o my-letsencrypt-d letsencrypt-stage -k pkcs8.key
+./acme-account -o my-letsencrypt-d letsencrypt-stage
 ```
 
 ## Questions
