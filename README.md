@@ -2,11 +2,7 @@
 
 Utility to create or retrieve an account with certificate authorities that support the [Automatic Certificate Management Environment (ACME)](https://datatracker.ietf.org/doc/html/rfc8555) protocol. 
 
-If you're working with [IBM Cloud® Secrets Manager](https://cloud.ibm.com/catalog/services/secrets-manager), you can use this tool to help you set up certificate ordering for your service instance. 
-
-![The image shows the example output for this utility.](images/acme-account-example.svg)
-
-To learn more about ordering and managing certificates with Secrets Manager, check out the [IBM Cloud documentation](https://cloud.ibm.com/docs/secrets-manager). 
+If you're working with [IBM Cloud® Secrets Manager](https://cloud.ibm.com/catalog/services/secrets-manager), you can use this tool to enable your instance to order public TLS certificates from Let's Encrypt. To learn more about ordering and managing certificates with Secrets Manager, check out the [IBM Cloud documentation](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-prepare-order-certificates). 
 
 
 ## Prerequisites
@@ -47,11 +43,35 @@ Usage of ./acme-account:
 [-k], [--privateKeyPath]  path to the private key in PKCS1/PKCS8 PEM format to be used. If an account with this private key exists, the account will be retrieved. This flag overrides the -g flag  
 ```
  
-A successful request registers a new account and stores the account credentials in `<outputFilenamePrefix>-private-key.pem`. Your account information is stored in  `<outputFilenamePrefix>-account-info.json`.
+- Email address is optional, but recommended so that Let's Encrypt can send expiry notices when your certificates are coming up for renewal.
+- You can choose to provide your own private key in PKCS#1 or PKCS#8 format. If a key isn't provided, the tool generates one automatically on your behalf. You can specify the key type by using the `-g, --keyTypeToGenerate` flag.
+- A successful request registers a new account and stores the account credentials in `<outputFilenamePrefix>-private-key.pem`. Your account information is stored in  `<outputFilenamePrefix>-account-info.json`.
+- Use the private key that is generated for your new ACME account to [add a certificate authority configuration](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-add-certificate-authority) in Secrets Manager.
 
+<details>
+<summary><strong>Show example response</strong></summary>
 
-Use the private key that is generated for your account to [add a certificate authority configuration](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-ca-config) in Secrets Manager.
+```
+./acme-account -e zoe@example.com -o my-letsencrypt -d letsencrypt-prod -k pkcs8.key
 
+INFO[2021-09-03T14:01:34-05:00] An account for the provided private key does not exist with the CA
+INFO[2021-09-03T14:01:34-05:00] Registering a new account with the CA
+INFO[2021-09-03T14:01:34-05:00] Account information written to file : my-letsencrypt-account-info.json
+INFO[2021-09-03T14:01:34-05:00] Private key written to file : my-letsencrypt-acct-private-key.pem
+
+Account Info
+{
+	"email": "zoe@example.com",
+	"registration_uri": "https://acme-v02.api.letsencrypt.org/acme/acct/186967230",
+	"registration_body": {
+		"status": "valid",
+		"contact": [
+			"mailto:zoe@example.com"
+		]
+	}
+}
+```
+</details>
 
 ### Supported certificate authorities
 
@@ -59,12 +79,12 @@ Use the private key that is generated for your account to [add a certificate aut
 
 Create an account that targets the Let's Encrypt production environment.
 ```
-./acme-account -o my-letsencrypt -d letsencrypt-prod
+./acme-account -e <email> -o my-letsencrypt -d letsencrypt-prod
 ```
 
 Create an account that targets the Let's Encrypt staging environment.
 ```
-./acme-account -o my-letsencrypt-d letsencrypt-stage
+./acme-account -e <email> -o my-letsencrypt-d letsencrypt-stage
 ```
 
 ## Questions
