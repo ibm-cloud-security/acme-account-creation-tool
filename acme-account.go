@@ -5,6 +5,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -29,7 +30,7 @@ import (
 )
 
 const (
-	outputPrivateKeyFileNameSuffix = "-private-key.pem"
+	outputPrivateKeyFileNameSuffix  = "-private-key.pem"
 	outputAccountInfoFileNameSuffix = "-account-info.json"
 
 	directoryURLFlag          = "directoryURL"
@@ -37,8 +38,15 @@ const (
 	caCertPathFlag            = "caRootCertPath"
 	outputFileNamePrefixFlag  = "outputFilenamePrefix"
 	privateKeyPathFlag        = "privateKeyPath"
-	eabKeyIDFlag			  = "eabKeyIDFlag"
-	eabHMACKeyFlag			  = "eabHMACKeyFlag"
+	eabKeyIDFlag              = "eabKeyIDFlag"
+	eabHMACKeyFlag            = "eabHMACKeyFlag"
+	keyTypeToGenerateFlag     = "keyTypeToGenerate"
+
+	rsa2048                   = "rsa2048"
+	rsa3072                   = "rsa3072"
+	rsa4096                   = "rsa4096"
+	ec256                     = "ec256"
+	ec384                     = "ec384"
 )
 
 var directoryAlias  = map[string]string {
@@ -46,6 +54,15 @@ var directoryAlias  = map[string]string {
 	"letsencrypt-prod": "https://acme-v02.api.letsencrypt.org/directory",
 }
 
+type KeyType string
+
+const (
+	EC256   = KeyType("P256")
+	EC384   = KeyType("P384")
+	RSA2048 = KeyType("2048")
+	RSA3072 = KeyType("3072")
+	RSA4096 = KeyType("4096")
+)
 
 type AccountConfig struct {
 	Email                   string
@@ -78,13 +95,67 @@ func (c *AccountConfig) GetPrivateKey() crypto.PrivateKey {
 	return c.key
 }
 
+func GetKeyTypeFromString(keyType string) (KeyType, error) {
+	switch keyType {
+	case rsa2048:
+		return RSA2048, nil
+	case rsa3072:
+		return RSA3072, nil
+	case rsa4096:
+		return RSA4096, nil
+	case ec256:
+		return EC256, nil
+	case ec384:
+		return EC384, nil
+	default:
+		return "", errors.New(fmt.Sprintf("invalid key type %s",keyType))
+	}
+}
+
+func GeneratePrivateKey(keyType KeyType) (crypto.PrivateKey, error) {
+	switch keyType {
+	case EC256:
+		return ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	case EC384:
+		return ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+	case RSA2048:
+		return rsa.GenerateKey(rand.Reader, 2048)
+	case RSA3072:
+		return rsa.GenerateKey(rand.Reader, 3072)
+	case RSA4096:
+		return rsa.GenerateKey(rand.Reader, 4096)
+	}
+
+	return nil, fmt.Errorf("invalid KeyType: %s", keyType)
+}
+
 func DecodePrivateKey(pemEncoded string) (crypto.PrivateKey, error) {
 	block, _ := pem.Decode([]byte(pemEncoded))
 	if block == nil {
-		return nil, errors.New("failed to decode the private key")
+		return nil, fmt.Errorf("nil block when decoding private key PEM")
 	}
 	x509Encoded := block.Bytes
-	privateKey, err := x509.ParsePKCS8PrivateKey(x509Encoded)
+
+	var privateKey crypto.PrivateKey
+	var err error
+
+	if block.Type == "PRIVATE KEY" {
+		privateKey, err = x509.ParsePKCS8PrivateKey(x509Encoded)
+		if err == nil {
+			switch privateKey.(type) {
+			case *rsa.PrivateKey, *ecdsa.PrivateKey:
+			default:
+				err = fmt.Errorf("unknown private key type in PKCS#8 wrapping")
+			}
+		}
+	} else if block.Type == "RSA PRIVATE KEY" {
+		privateKey, err = x509.ParsePKCS1PrivateKey(x509Encoded)
+	} else if  block.Type == "EC PRIVATE KEY" {
+		privateKey, err = x509.ParseECPrivateKey(x509Encoded)
+	} else {
+		err = fmt.Errorf("private key should be in unencrypted PKCS#1 or PKCS#8 format")
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -92,14 +163,13 @@ func DecodePrivateKey(pemEncoded string) (crypto.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func EncodePrivateKey(privateKey crypto.PrivateKey) (string, error){
+func EncodePrivateKeyToPKCS8PEM(privateKey crypto.PrivateKey) (string, error){
 	privateKeyDer, err := x509.MarshalPKCS8PrivateKey(privateKey)
 	if err != nil {
 		return "", err
 	}
 	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privateKeyDer})
 	return string(pemEncoded), nil
-
 }
 
 // loadRootCertPool builds a trust store (cert pool) containing our CA's root
@@ -124,6 +194,38 @@ func loadRootCertPool(rootCertPath string) (*x509.CertPool, error) {
 	return pool, nil
 }
 
+// ImportOrGeneratePrivateKey will construct a private key from the importKeyPath if it is not empty
+// Otherwise, it will generate a private key of type keyTypeString
+func ImportOrGeneratePrivateKey(importKeyPath , keyTypeString string) (crypto.PrivateKey, bool, error){
+	var privateKey crypto.PrivateKey
+	var isKeyGenerated bool
+
+	if importKeyPath != "" {
+		privateKeyPEM, err := ReadPrivateKeyPEMFromFile(importKeyPath)
+		if err != nil {
+			return nil, false, err
+		}
+		privateKey, err = DecodePrivateKey(privateKeyPEM)
+		if err != nil {
+			return nil, false, err
+		}
+		isKeyGenerated = false
+
+	} else {
+		keyType, err := GetKeyTypeFromString(keyTypeString)
+		if err != nil {
+			return nil, false, err
+		}
+		privateKey, err = GeneratePrivateKey(keyType)
+		if err != nil {
+			return nil, false, err
+		}
+		isKeyGenerated = true
+	}
+
+	return privateKey, isKeyGenerated, nil
+}
+
 // getHTTPSClient gets an HTTPS client configured to trust our CA's root
 // certificate.
 func getHTTPSClient(rootCertPath string) (*http.Client, error) {
@@ -146,41 +248,6 @@ func getHTTPSClient(rootCertPath string) (*http.Client, error) {
 		Transport: tr,
 	}, nil
 }
-
-// NewAccountConfig creates a new account configuration.
-// If privateKeyPEM is empty string, then a new P-256 key is generated and used for creating the account
-// If privateKeyPEM is provided, then the provided key is used for creating the account
-func NewAccountConfig(directoryUrl string, email string,
-	termsOfServiceAgreed bool, privateKeyPEM , caRootCertPath, eabKeyID, eabHMACKey string) (*AccountConfig, error) {
-
-	var privateKey crypto.PrivateKey
-	var err error
-	var isKeyGenerated bool
-	if privateKeyPEM != ""{
-		privateKey, err = DecodePrivateKey(privateKeyPEM)
-		isKeyGenerated = false
-	} else {
-		privateKey, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-		isKeyGenerated = true
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	accountConfig := &AccountConfig{
-		Email:                email,
-		key:                  privateKey,
-		isKeyGenerated: 	  isKeyGenerated,
-		DirectoryURL:         directoryUrl,
-		CARootCertPath:       caRootCertPath,
-		TermsOfServiceAgreed: termsOfServiceAgreed,
-		EabKeyID: 			  eabKeyID,
-		EabHMACKey: 		  eabHMACKey,
-	}
-
-	return accountConfig, nil
-}
-
 
 type Client struct {
 	LegoClient *lego.Client
@@ -398,7 +465,7 @@ func ExtractFirstEmailFromAccount(retrievedAccount *registration.Resource) (stri
 			return email, nil
 		}
 	}
-	return "", fmt.Errorf("no email address in retrieved account")
+	return "", nil
 }
 
 func ConfigureUsage(){
@@ -409,17 +476,11 @@ func ConfigureUsage(){
 	privateKeyPathFlagInternal := flag.Lookup(privateKeyPathFlag)
 	eabKeyIDFlagInternal := flag.Lookup(eabKeyIDFlag)
 	eabHMACKeyFlagInternal := flag.Lookup(eabHMACKeyFlag)
+	keyTypeToGenerateFlagInternal := flag.Lookup(keyTypeToGenerateFlag)
 
 	flag.Usage = func() {
 
 		fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
-
-		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
-			emailFlagInternal.Shorthand,
-			emailFlagInternal.Name,
-			emailFlagInternal.Usage,
-			emailFlagInternal.DefValue,
-			false) )
 
 		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
 			outputFileNamePrefixFlagInternal.Shorthand,
@@ -429,10 +490,24 @@ func ConfigureUsage(){
 			false) )
 
 		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
+			emailFlagInternal.Shorthand,
+			emailFlagInternal.Name,
+			emailFlagInternal.Usage,
+			emailFlagInternal.DefValue,
+			true) )
+
+		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
 			directoryURLFlagInternal.Shorthand,
 			directoryURLFlagInternal.Name,
 			directoryURLFlagInternal.Usage,
 			directoryURLFlagInternal.DefValue,
+			true) )
+
+		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
+			keyTypeToGenerateFlagInternal.Shorthand,
+			keyTypeToGenerateFlagInternal.Name,
+			keyTypeToGenerateFlagInternal.Usage,
+			keyTypeToGenerateFlagInternal.DefValue,
 			true) )
 
 		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
@@ -474,17 +549,16 @@ func main() {
 
 	directoryURL := flag.StringP(directoryURLFlag, "d" ,"letsencrypt-prod", "acme directory URL of the CA. Following alias are defined: \"letsencrypt-prod\", \"letsencrypt-stage\" " )
 	email := flag.StringP(emailFlag,"e","", "email to be registered for the account" )
-	privateKeyPath := flag.StringP(privateKeyPathFlag, "k", "", "path to the private key in PKCS8 PEM format to be used. If an account with this private key exists, the account will be retrieved")
+	privateKeyPath := flag.StringP(privateKeyPathFlag, "k", "", "path to the private key in PKCS1/PKCS8 PEM format to be used. If an account with this private key exists, the account will be retrieved. This flag overrides the -g flag")
 	caRootCertPath := flag.StringP(caCertPathFlag, "c", "", "path to a custom CA root certificate. Only required for private/testing ACME CA's like pebble")
 	outputFilenamePrefix := flag.StringP(outputFileNamePrefixFlag, "o", "", "file name prefix to store the account details")
 	eabKeyID :=  flag.StringP(eabKeyIDFlag, "i", "", "key ID for external account binding")
 	eabHMACKey :=  flag.StringP(eabHMACKeyFlag, "h", "", "HMAC key for external account binding")
-
+	keyTypeToGenerate :=  flag.StringP(keyTypeToGenerateFlag, "g", "ec256", fmt.Sprintf("key type to generate. Supported values - %s, %s, %s, %s, %s", rsa2048, rsa3072, rsa4096, ec256, ec384))
 
 	ConfigureUsage()
 	flag.Parse()
 
-	ExitIfStringFlagNotProvided(emailFlag, *email)
 	ExitIfStringFlagNotProvided(outputFileNamePrefixFlag, *outputFilenamePrefix)
 
 	privateKeyOutputFilename := *outputFilenamePrefix + outputPrivateKeyFileNameSuffix
@@ -500,18 +574,20 @@ func main() {
 		*directoryURL = val
 	}
 
-	var privateKeyPEM string
-	var err error
-	if *privateKeyPath != "" {
-		privateKeyPEM, err = ReadPrivateKeyPEMFromFile(*privateKeyPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
-
-	accountConfig, err := NewAccountConfig(*directoryURL, *email, true, privateKeyPEM, *caRootCertPath, *eabKeyID, *eabHMACKey)
+	privateKey, isKeyGenerated, err := ImportOrGeneratePrivateKey(*privateKeyPath, *keyTypeToGenerate)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	accountConfig := &AccountConfig{
+		Email:                *email,
+		DirectoryURL:         *directoryURL,
+		CARootCertPath:       *caRootCertPath,
+		key:                  privateKey,
+		isKeyGenerated:       isKeyGenerated,
+		TermsOfServiceAgreed: true,
+		EabKeyID: 			  *eabKeyID,
+		EabHMACKey: 		  *eabHMACKey,
 	}
 
 	err = CreateAccountIfNotExists(accountConfig)
@@ -519,7 +595,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	outputPrivateKeyPEM, err := EncodePrivateKey(accountConfig.key)
+	outputPrivateKeyPEM, err := EncodePrivateKeyToPKCS8PEM(accountConfig.key)
 	if err != nil {
 		log.Fatal(err)
 	}
