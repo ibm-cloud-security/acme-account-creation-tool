@@ -42,11 +42,8 @@ Usage of ./acme-account:
 
 [-k], [--privateKeyPath]  path to the private key in PKCS1/PKCS8 PEM format to be used. If an account with this private key exists, the account will be retrieved. This flag overrides the -g flag  
 ```
- 
-- Email address is optional, but recommended so that Let's Encrypt can send expiry notices when your certificates are coming up for renewal.
-- You can choose to provide your own private key in PKCS#1 or PKCS#8 format. If a key isn't provided, the tool generates one automatically on your behalf. You can specify the key type by using the `-g, --keyTypeToGenerate` flag.
-- A successful request registers a new account and stores the account credentials in `<outputFilenamePrefix>-private-key.pem`. Your account information is stored in  `<outputFilenamePrefix>-account-info.json`.
-- Use the private key that is generated for your new ACME account to [add a certificate authority configuration](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-add-certificate-authority) in Secrets Manager.
+
+A successful request registers a new account and stores the account credentials in `<outputFilenamePrefix>-private-key.pem`. Your account information is stored in  `<outputFilenamePrefix>-account-info.json`.
 
 <details>
 <summary><strong>Show example response</strong></summary>
@@ -62,7 +59,7 @@ INFO[2021-09-03T14:01:34-05:00] Private key written to file : my-letsencrypt-acc
 Account Info
 {
 	"email": "zoe@example.com",
-	"registration_uri": "https://acme-v02.api.letsencrypt.org/acme/acct/186967230",
+	"registration_uri": "https://acme-v02.api.letsencrypt.org/acme/acct/123967230",
 	"registration_body": {
 		"status": "valid",
 		"contact": [
@@ -72,6 +69,15 @@ Account Info
 }
 ```
 </details>
+
+
+#### Notes
+
+- Email address is optional, but recommended so that Let's Encrypt can send expiry notices when your certificates are coming up for renewal.
+- You can choose to provide your own private key in PKCS#1 or PKCS#8 format. If a key isn't provided, the tool generates one automatically on your behalf. To specify the key type, use the `-g, --keyTypeToGenerate` flag.
+- Use the private key that is generated for your new ACME account to [add a certificate authority configuration](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-add-certificate-authority) in Secrets Manager.
+
+
 
 ### Supported certificate authorities
 
