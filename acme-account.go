@@ -551,7 +551,7 @@ func main() {
 	email := flag.StringP(emailFlag,"e","", "email to be registered for the account" )
 	privateKeyPath := flag.StringP(privateKeyPathFlag, "k", "", "path to the private key in PKCS1/PKCS8 PEM format to be used. If an account with this private key exists, the account will be retrieved. This flag overrides the -g flag")
 	//caRootCertPath := flag.StringP(caCertPathFlag, "c", "", "path to a custom CA root certificate. Only required for private/testing ACME CA's like pebble")
-	//outputFilenamePrefix := flag.StringP(outputFileNamePrefixFlag, "o", "", "file name prefix to store the account details")
+	outputFilenamePrefix := flag.StringP(outputFileNamePrefixFlag, "o", "", "file name prefix to store the account details")
 	//eabKeyID :=  flag.StringP(eabKeyIDFlag, "i", "", "key ID for external account binding")
 	//eabHMACKey :=  flag.StringP(eabHMACKeyFlag, "h", "", "HMAC key for external account binding")
 	keyTypeToGenerate :=  flag.StringP(keyTypeToGenerateFlag, "g", "ec256", fmt.Sprintf("key type to generate. Supported values - %s, %s, %s, %s, %s", rsa2048, rsa3072, rsa4096, ec256, ec384))
