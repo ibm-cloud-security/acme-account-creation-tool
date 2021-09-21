@@ -471,11 +471,8 @@ func ExtractFirstEmailFromAccount(retrievedAccount *registration.Resource) (stri
 func ConfigureUsage(){
 	directoryURLFlagInternal := flag.Lookup(directoryURLFlag)
 	emailFlagInternal := flag.Lookup(emailFlag)
-	caCertPathFlagInternal := flag.Lookup(caCertPathFlag)
 	outputFileNamePrefixFlagInternal := flag.Lookup(outputFileNamePrefixFlag)
 	privateKeyPathFlagInternal := flag.Lookup(privateKeyPathFlag)
-	eabKeyIDFlagInternal := flag.Lookup(eabKeyIDFlag)
-	eabHMACKeyFlagInternal := flag.Lookup(eabHMACKeyFlag)
 	keyTypeToGenerateFlagInternal := flag.Lookup(keyTypeToGenerateFlag)
 
 	flag.Usage = func() {
@@ -515,27 +512,6 @@ func ConfigureUsage(){
 			privateKeyPathFlagInternal.Name,
 			privateKeyPathFlagInternal.Usage,
 			privateKeyPathFlagInternal.DefValue,
-			true) )
-
-		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
-			caCertPathFlagInternal.Shorthand,
-			caCertPathFlagInternal.Name,
-			caCertPathFlagInternal.Usage,
-			caCertPathFlagInternal.DefValue,
-			true) )
-
-		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
-			eabKeyIDFlagInternal.Shorthand,
-			eabKeyIDFlagInternal.Name,
-			eabKeyIDFlagInternal.Usage,
-			eabKeyIDFlagInternal.DefValue,
-			true) )
-
-		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
-			eabHMACKeyFlagInternal.Shorthand,
-			eabHMACKeyFlagInternal.Name,
-			eabHMACKeyFlagInternal.Usage,
-			eabHMACKeyFlagInternal.DefValue,
 			true) )
 
 	}
