@@ -7,7 +7,7 @@ If you're working with [IBM Cloud® Secrets Manager](https://cloud.ibm.com/catal
 
 ## Prerequisites
 
-- [Download and install Go](https://golang.org/doc/install).
+- [Go version 1.15 or later](https://golang.org/doc/install).
 
 
 ## Installation
