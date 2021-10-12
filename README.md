@@ -7,7 +7,8 @@ If you're working with [IBM Cloud® Secrets Manager](https://cloud.ibm.com/catal
 
 ## Prerequisites
 
-- [Download and install Go](https://golang.org/doc/install).
+- [Go version 1.15 or later](https://golang.org/doc/install).
+- Windows OS currently not supported.
 
 
 ## Installation
@@ -90,7 +91,7 @@ Create an account that targets the Let's Encrypt production environment.
 
 Create an account that targets the Let's Encrypt staging environment.
 ```
-./acme-account -e <email> -o my-letsencrypt-d letsencrypt-stage
+./acme-account -e <email> -o my-letsencrypt -d letsencrypt-stage
 ```
 
 ## Questions
