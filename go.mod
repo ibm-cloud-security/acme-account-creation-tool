@@ -1,4 +1,4 @@
-module github.ibm.com/acme-account
+module github.com/acme-account
 
 go 1.15
 
