@@ -1,4 +1,4 @@
-module github.com/acme-account
+module github.com/ibm-cloud-security/acme-account-creation-tool
 
 go 1.15
 
