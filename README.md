@@ -8,7 +8,6 @@ If you're working with [IBM Cloud® Secrets Manager](https://cloud.ibm.com/catal
 ## Prerequisites
 
 - [Go version 1.15 or later](https://golang.org/doc/install).
-- Windows OS currently not supported.
 
 
 ## Installation
