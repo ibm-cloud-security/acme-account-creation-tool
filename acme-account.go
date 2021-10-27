@@ -20,7 +20,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	flag "github.com/spf13/pflag"
 	"golang.org/x/net/http2"
-	"golang.org/x/sys/unix"
 	"io/ioutil"
 	systemLog "log"
 	"net/http"
@@ -170,28 +169,6 @@ func EncodePrivateKeyToPKCS8PEM(privateKey crypto.PrivateKey) (string, error){
 	}
 	pemEncoded := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: privateKeyDer})
 	return string(pemEncoded), nil
-}
-
-// loadRootCertPool builds a trust store (cert pool) containing our CA's root
-// certificate.
-func loadRootCertPool(rootCertPath string) (*x509.CertPool, error) {
-
-	pool, err := x509.SystemCertPool()
-	if err != nil {
-		return nil, errors.New("cannot load system certs")
-	}
-
-	if rootCertPath != "" {
-		root, err := ioutil.ReadFile(rootCertPath)
-		if err != nil {
-			return nil, err
-		}
-		if ok := pool.AppendCertsFromPEM(root); !ok {
-			return nil, errors.New("missing or invalid root certificate")
-		}
-	}
-
-	return pool, nil
 }
 
 // ImportOrGeneratePrivateKey will construct a private key from the importKeyPath if it is not empty
@@ -397,18 +374,6 @@ func ReadPrivateKeyPEMFromFile(filename string) (string, error){
 	privateKeyPEM := string(privateKeyPEMBytes)
 	return privateKeyPEM, nil
 
-}
-
-func WritePrivateKeyToFile(outputFileName, privateKeyPEM string) error {
-	umask := unix.Umask(0)
-	defer unix.Umask(umask)
-
-	err := ioutil.WriteFile(outputFileName, []byte(privateKeyPEM), 0600)
-	if err != nil{
-		return err
-	}
-
-	return nil
 }
 
 func GetSerializedAccountInfo(email string, registrationInfo *registration.Resource )  (string, error) {
