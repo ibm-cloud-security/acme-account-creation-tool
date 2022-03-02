@@ -25,7 +25,7 @@ If you're working with [IBM Cloud® Secrets Manager](https://cloud.ibm.com/catal
 3. Run the utility to ensure that it was installed successfully.
 
     ```
-    ./acme-account
+    ./acme-account-creation-tool
     ```
 
 ## Usage
