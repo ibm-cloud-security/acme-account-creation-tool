@@ -85,12 +85,12 @@ Account Info
 
 Create an account that targets the Let's Encrypt production environment.
 ```
-./acme-account -e <email> -o my-letsencrypt -d letsencrypt-prod
+./acme-account-creation-tool -e <email> -o my-letsencrypt -d letsencrypt-prod
 ```
 
 Create an account that targets the Let's Encrypt staging environment.
 ```
-./acme-account -e <email> -o my-letsencrypt -d letsencrypt-stage
+./acme-account-creation-tool -e <email> -o my-letsencrypt -d letsencrypt-stage
 ```
 
 ## Questions
