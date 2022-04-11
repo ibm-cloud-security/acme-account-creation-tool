@@ -9,26 +9,9 @@ If you're working with [IBM Cloud® Secrets Manager](https://cloud.ibm.com/catal
 
 - [Go version 1.15 or later](https://golang.org/doc/install).
 
-
-## Installation
-
-1. Clone or download the repository.
-
-    ```
-    git clone https://github.com/ibm-cloud-security/acme-account-creation-tool.git
-    ```
-2. Compile the repository contents.
-
-    ```
-    go build
-    ```
-3. Run the utility to ensure that it was installed successfully.
-
-    ```
-    ./acme-account-creation-tool
-    ```
-
 ## Usage
+1. Download a binary for your Operating System [from available Releases](https://github.com/ibm-cloud-security/acme-account-creation-tool/releases).
+2. Review the following usage guidelines.
 
 ```
 Usage of ./acme-account-creation-tool:
@@ -70,14 +53,11 @@ Account Info
 ```
 </details>
 
-
 #### Notes
 
 - Email address is optional, but recommended so that Let's Encrypt can send expiry notices when your certificates are coming up for renewal.
 - You can choose to provide your own private key in PKCS#1 or PKCS#8 format. If a key isn't provided, the tool generates one automatically on your behalf. To specify the key type, use the `-g, --keyTypeToGenerate` flag.
 - Use the private key that is generated for your new ACME account to [add a certificate authority configuration](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-add-certificate-authority) in Secrets Manager.
-
-
 
 ### Supported certificate authorities
 
@@ -92,6 +72,24 @@ Create an account that targets the Let's Encrypt staging environment.
 ```
 ./acme-account-creation-tool -e <email> -o my-letsencrypt -d letsencrypt-stage
 ```
+
+## Manually building the ACME client
+
+1. Clone or download the repository.
+
+    ```
+    git clone https://github.com/ibm-cloud-security/acme-account-creation-tool.git
+    ```
+2. Compile the repository contents.
+
+    ```
+    go build
+    ```
+3. Run the utility to ensure that it was installed successfully.
+
+    ```
+    ./acme-account-creation-tool
+    ```
 
 ## Questions
 

@@ -3,6 +3,9 @@ name: goreleaser
 on:
   push:
 
+permissions:
+  contents: write
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
