@@ -4,11 +4,6 @@ Utility to create or retrieve an account with certificate authorities that suppo
 
 If you're working with [IBM Cloud® Secrets Manager](https://cloud.ibm.com/catalog/services/secrets-manager), you can use this tool to enable your instance to order public TLS certificates from Let's Encrypt. To learn more about ordering and managing certificates with Secrets Manager, check out the [IBM Cloud documentation](https://cloud.ibm.com/docs/secrets-manager?topic=secrets-manager-prepare-order-certificates). 
 
-
-## Prerequisites
-
-- [Go version 1.15 or later](https://golang.org/doc/install).
-
 ## Usage
 1. Download a binary for your Operating System [from available Releases](https://github.com/ibm-cloud-security/acme-account-creation-tool/releases).
 2. Review the following usage guidelines.
@@ -74,6 +69,8 @@ Create an account that targets the Let's Encrypt staging environment.
 ```
 
 ## Manually building the ACME client
+
+> Prerequisites: [Go version 1.15 or later](https://golang.org/doc/install).
 
 1. Clone or download the repository.
 
