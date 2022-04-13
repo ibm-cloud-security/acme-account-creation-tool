@@ -1,25 +1,8 @@
 # .goreleaser.yaml
 project_name: acme-account-creation-tool
 
-github_urls:
-  api: https://github.com/api/v3/
-  upload: https://github.com/api/uploads/
-  download: https://github.com/
-  # set to true if you use a self-signed certificate
-  skip_tls_verify: false
-
 builds:
-  - # Path to main.go file or main package.
-    
-
-    # Custom asmflags templates.
-    asmflags:
-
-    # Custom gcflags templates.
-    gcflags:
-
-    # Custom environment variables to be set during the builds.
-    env:
+  - env:
       - CGO_ENABLED=0
       - GO111MODULE=on
 
