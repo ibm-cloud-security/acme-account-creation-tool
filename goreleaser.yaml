@@ -21,6 +21,7 @@ builds:
     # GOARCH to build for.
     goarch:
       - amd64
+      - arm64
       - 386
 
 archives:
