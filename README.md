@@ -10,7 +10,7 @@ If you're working with [IBM Cloud® Secrets Manager](https://cloud.ibm.com/catal
 3. Review the following usage guidelines
 
 ```
-Usage of ./acme-account-creation-tool:
+Usage of acme-account-creation-tool:
 -o, --outputFilenamePrefix   file name prefix to store the account details  
 
 [-e], [--email]  email to be registered for the account  
@@ -28,7 +28,7 @@ A successful request registers a new account and stores the account credentials 
 <summary><strong>Show example response</strong></summary>
 
 ```
-./acme-account-creation-tool -e zoe@example.com -o my-letsencrypt -d letsencrypt-prod -k pkcs8.key
+acme-account-creation-tool -e zoe@example.com -o my-letsencrypt -d letsencrypt-prod -k pkcs8.key
 
 INFO[2021-09-03T14:01:34-05:00] An account for the provided private key does not exist with the CA
 INFO[2021-09-03T14:01:34-05:00] Registering a new account with the CA
