@@ -14,6 +14,7 @@ require (
 	github.com/cenkalti/backoff/v4 v4.1.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/miekg/dns v1.1.40 // indirect
+	github.com/stretchr/testify v1.8.2 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
