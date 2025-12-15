@@ -6,8 +6,8 @@ require (
 	github.com/go-acme/lego/v4 v4.4.0
 	github.com/sirupsen/logrus v1.8.3
 	github.com/spf13/pflag v1.0.6
-	golang.org/x/net v0.47.0
-	golang.org/x/sys v0.38.0
+	golang.org/x/net v0.48.0
+	golang.org/x/sys v0.39.0
 )
 
 require (
@@ -15,7 +15,7 @@ require (
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/miekg/dns v1.1.40 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
-	golang.org/x/crypto v0.45.0 // indirect
-	golang.org/x/text v0.31.0 // indirect
+	golang.org/x/crypto v0.46.0 // indirect
+	golang.org/x/text v0.32.0 // indirect
 	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 )
