@@ -15,11 +15,15 @@ Usage of acme-account-creation-tool:
 
 [-e], [--email]  email to be registered for the account  
 
-[-d], [--directoryURL]  acme directory URL of the CA. Following alias are defined: "letsencrypt-prod", "letsencrypt-stage"  (default letsencrypt-prod) 
+[-d], [--directoryURL]  acme directory URL of the CA. Following alias are defined: "letsencrypt-prod", "letsencrypt-stage". For DigiCert, provide the full directory URL  (default letsencrypt-prod) 
 
 [-g], [--keyTypeToGenerate]  key type to generate. Supported values - rsa2048, rsa3072, rsa4096, ec256, ec384 (default ec256) 
 
 [-k], [--privateKeyPath]  path to the private key in PKCS1/PKCS8 PEM format to be used. If an account with this private key exists, the account will be retrieved. This flag overrides the -g flag  
+
+[-i], [--kid]  key ID (KID) for external account binding (required for DigiCert)
+
+[-m], [--hmac]  HMAC key for external account binding (required for DigiCert)
 ```
 
 A successful request registers a new account and stores the account credentials in `<outputFilenamePrefix>-private-key.pem`. Your account information is stored in  `<outputFilenamePrefix>-account-info.json`.
@@ -67,6 +71,31 @@ Create an account that targets the Let's Encrypt production environment.
 Create an account that targets the Let's Encrypt staging environment.
 ```
 ./acme-account-creation-tool -e <email> -o my-letsencrypt -d letsencrypt-stage
+
+#### [DigiCert](https://www.digicert.com/)
+
+Create an account with DigiCert. DigiCert requires External Account Binding (EAB), so you must provide the full directory URL along with both the KID (Key ID) and HMAC key that you obtain from your DigiCert account.
+
+```bash
+./acme-account-creation-tool \
+  -d "https://acme.digicert.com/v2/acme/directory" \
+  -e "your-email@example.com" \
+  -i "your-kid-value" \
+  -m "your-hmac-key-value" \
+  -o my-digicert-account
+```
+
+Example with DigiCert demo environment:
+```bash
+./acme-account-creation-tool \
+  -d "https://demo.one.digicert.com/mpki/api/v1/acme/v2/directory" \
+  -e "your-email@example.com" \
+  -i "your-kid-value" \
+  -m "your-hmac-key-value" \
+  -o my-digicert-account
+```
+
+**Note:** To obtain your DigiCert EAB credentials (KID and HMAC key), log in to your DigiCert account and navigate to the ACME section in your account settings.
 ```
 
 ## Manually building the ACME client
