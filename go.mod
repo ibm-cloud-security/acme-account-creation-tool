@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/go-acme/lego/v4 v4.35.2
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/pflag v1.0.7
 	golang.org/x/net v0.54.0
 	golang.org/x/sys v0.44.0
