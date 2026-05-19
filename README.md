@@ -71,7 +71,7 @@ Create an account that targets the Let's Encrypt staging environment.
 
 ## Manually building the ACME client
 
-> Prerequisites: [Go version 1.15 or later](https://golang.org/doc/install).
+> Prerequisites: [Go version 1.25 or later](https://golang.org/doc/install).
 
 1. Clone or download the repository.
 
