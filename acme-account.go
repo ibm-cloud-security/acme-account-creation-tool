@@ -32,25 +32,25 @@ const (
 	outputPrivateKeyFileNameSuffix  = "-private-key.pem"
 	outputAccountInfoFileNameSuffix = "-account-info.json"
 
-	directoryURLFlag          = "directoryURL"
-	emailFlag                 = "email"
-	caCertPathFlag            = "caRootCertPath"
-	outputFileNamePrefixFlag  = "outputFilenamePrefix"
-	privateKeyPathFlag        = "privateKeyPath"
-	eabKeyIDFlag              = "eabKeyIDFlag"
-	eabHMACKeyFlag            = "eabHMACKeyFlag"
-	keyTypeToGenerateFlag     = "keyTypeToGenerate"
+	directoryURLFlag         = "directoryURL"
+	emailFlag                = "email"
+	caCertPathFlag           = "caRootCertPath"
+	outputFileNamePrefixFlag = "outputFilenamePrefix"
+	privateKeyPathFlag       = "privateKeyPath"
+	eabKidFlag               = "kid"
+	eabHmacFlag              = "hmac"
+	keyTypeToGenerateFlag    = "keyTypeToGenerate"
 
-	rsa2048                   = "rsa2048"
-	rsa3072                   = "rsa3072"
-	rsa4096                   = "rsa4096"
-	ec256                     = "ec256"
-	ec384                     = "ec384"
+	rsa2048 = "rsa2048"
+	rsa3072 = "rsa3072"
+	rsa4096 = "rsa4096"
+	ec256   = "ec256"
+	ec384   = "ec384"
 )
 
-var directoryAlias  = map[string]string {
+var directoryAlias = map[string]string{
 	"letsencrypt-stage": "https://acme-staging-v02.api.letsencrypt.org/directory",
-	"letsencrypt-prod": "https://acme-v02.api.letsencrypt.org/directory",
+	"letsencrypt-prod":  "https://acme-v02.api.letsencrypt.org/directory",
 }
 
 type KeyType string
@@ -64,16 +64,16 @@ const (
 )
 
 type AccountConfig struct {
-	Email                   string
-	CARootCertPath          string
-	DirectoryURL            string
-	Registration            *registration.Resource
-	key                     crypto.PrivateKey
-	isKeyGenerated          bool
-	Provider                string
-	TermsOfServiceAgreed    bool
-	EabKeyID             	string
-	EabHMACKey           	string
+	Email                string
+	CARootCertPath       string
+	DirectoryURL         string
+	Registration         *registration.Resource
+	key                  crypto.PrivateKey
+	isKeyGenerated       bool
+	Provider             string
+	TermsOfServiceAgreed bool
+	EabKeyID             string
+	EabHMACKey           string
 }
 
 type OutputDataFormat struct {
@@ -107,7 +107,7 @@ func GetKeyTypeFromString(keyType string) (KeyType, error) {
 	case ec384:
 		return EC384, nil
 	default:
-		return "", errors.New(fmt.Sprintf("invalid key type %s",keyType))
+		return "", errors.New(fmt.Sprintf("invalid key type %s", keyType))
 	}
 }
 
@@ -149,7 +149,7 @@ func DecodePrivateKey(pemEncoded string) (crypto.PrivateKey, error) {
 		}
 	} else if block.Type == "RSA PRIVATE KEY" {
 		privateKey, err = x509.ParsePKCS1PrivateKey(x509Encoded)
-	} else if  block.Type == "EC PRIVATE KEY" {
+	} else if block.Type == "EC PRIVATE KEY" {
 		privateKey, err = x509.ParseECPrivateKey(x509Encoded)
 	} else {
 		err = fmt.Errorf("private key should be in unencrypted PKCS#1 or PKCS#8 format")
@@ -162,7 +162,7 @@ func DecodePrivateKey(pemEncoded string) (crypto.PrivateKey, error) {
 	return privateKey, nil
 }
 
-func EncodePrivateKeyToPKCS8PEM(privateKey crypto.PrivateKey) (string, error){
+func EncodePrivateKeyToPKCS8PEM(privateKey crypto.PrivateKey) (string, error) {
 	privateKeyDer, err := x509.MarshalPKCS8PrivateKey(privateKey)
 	if err != nil {
 		return "", err
@@ -173,7 +173,7 @@ func EncodePrivateKeyToPKCS8PEM(privateKey crypto.PrivateKey) (string, error){
 
 // ImportOrGeneratePrivateKey will construct a private key from the importKeyPath if it is not empty
 // Otherwise, it will generate a private key of type keyTypeString
-func ImportOrGeneratePrivateKey(importKeyPath , keyTypeString string) (crypto.PrivateKey, bool, error){
+func ImportOrGeneratePrivateKey(importKeyPath, keyTypeString string) (crypto.PrivateKey, bool, error) {
 	var privateKey crypto.PrivateKey
 	var isKeyGenerated bool
 
@@ -320,7 +320,7 @@ func CreateAccountIfNotExists(accountConfig *AccountConfig) error {
 	return nil
 }
 
-func NewACMEClient(accountConfig *AccountConfig) (*Client, error){
+func NewACMEClient(accountConfig *AccountConfig) (*Client, error) {
 
 	if accountConfig == nil {
 		return nil, fmt.Errorf("nil account config")
@@ -336,7 +336,7 @@ func NewACMEClient(accountConfig *AccountConfig) (*Client, error){
 		CADirURL:   accountConfig.DirectoryURL,
 		User:       accountConfig,
 		HTTPClient: httpClient,
-		Certificate: lego.CertificateConfig {
+		Certificate: lego.CertificateConfig{
 			KeyType: certcrypto.RSA4096,
 			Timeout: 30 * time.Second,
 		},
@@ -348,10 +348,9 @@ func NewACMEClient(accountConfig *AccountConfig) (*Client, error){
 	return &Client{LegoClient: legoClient}, nil
 }
 
-
 func ExitIfStringFlagNotProvided(flagName string, value string) {
 	flagValues := flag.Lookup(flagName)
-	if value == ""{
+	if value == "" {
 		flag.Usage()
 		log.Fatalf("No %s provided \n", flagValues.Name)
 	}
@@ -366,7 +365,7 @@ func IsFileExists(name string) bool {
 	return true
 }
 
-func ReadPrivateKeyPEMFromFile(filename string) (string, error){
+func ReadPrivateKeyPEMFromFile(filename string) (string, error) {
 	privateKeyPEMBytes, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return "", err
@@ -376,7 +375,7 @@ func ReadPrivateKeyPEMFromFile(filename string) (string, error){
 
 }
 
-func GetSerializedAccountInfo(email string, registrationInfo *registration.Resource )  (string, error) {
+func GetSerializedAccountInfo(email string, registrationInfo *registration.Resource) (string, error) {
 	outputDataFormat := OutputDataFormat{
 		Email:            email,
 		RegistrationURI:  registrationInfo.URI,
@@ -388,7 +387,7 @@ func GetSerializedAccountInfo(email string, registrationInfo *registration.Resou
 		return "", err
 	}
 
-	return string(outputData),nil
+	return string(outputData), nil
 }
 
 func WriteAccountInfoToFile(outputFileName, serializedAccountInfo string) error {
@@ -408,7 +407,7 @@ func WriteAccountInfoToFile(outputFileName, serializedAccountInfo string) error 
 	return f.Close()
 }
 
-func UsageString (shortname, name, usage, defaultValue string, optional bool) string{
+func UsageString(shortname, name, usage, defaultValue string, optional bool) string {
 	if optional {
 		if len(defaultValue) > 0 {
 			return fmt.Sprintf("[-%s], [--%s]  %s (default %s)", shortname, name, usage, defaultValue)
@@ -433,7 +432,7 @@ func ExtractFirstEmailFromAccount(retrievedAccount *registration.Resource) (stri
 	return "", nil
 }
 
-func ConfigureUsage(){
+func ConfigureUsage() {
 	directoryURLFlagInternal := flag.Lookup(directoryURLFlag)
 	emailFlagInternal := flag.Lookup(emailFlag)
 	outputFileNamePrefixFlagInternal := flag.Lookup(outputFileNamePrefixFlag)
@@ -449,53 +448,53 @@ func ConfigureUsage(){
 			outputFileNamePrefixFlagInternal.Name,
 			outputFileNamePrefixFlagInternal.Usage,
 			outputFileNamePrefixFlagInternal.DefValue,
-			false) )
+			false))
 
 		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
 			emailFlagInternal.Shorthand,
 			emailFlagInternal.Name,
 			emailFlagInternal.Usage,
 			emailFlagInternal.DefValue,
-			true) )
+			true))
 
 		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
 			directoryURLFlagInternal.Shorthand,
 			directoryURLFlagInternal.Name,
 			directoryURLFlagInternal.Usage,
 			directoryURLFlagInternal.DefValue,
-			true) )
+			true))
 
 		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
 			keyTypeToGenerateFlagInternal.Shorthand,
 			keyTypeToGenerateFlagInternal.Name,
 			keyTypeToGenerateFlagInternal.Usage,
 			keyTypeToGenerateFlagInternal.DefValue,
-			true) )
+			true))
 
 		fmt.Fprintf(os.Stderr, "%s \n\n", UsageString(
 			privateKeyPathFlagInternal.Shorthand,
 			privateKeyPathFlagInternal.Name,
 			privateKeyPathFlagInternal.Usage,
 			privateKeyPathFlagInternal.DefValue,
-			true) )
+			true))
 
 	}
 }
 
 func main() {
 	// Disable lego logger
-	legoLogger.Logger = systemLog.New(ioutil.Discard,"", systemLog.LstdFlags)
+	legoLogger.Logger = systemLog.New(ioutil.Discard, "", systemLog.LstdFlags)
 
 	log.SetFormatter(&log.TextFormatter{DisableColors: false, FullTimestamp: true})
 
-	directoryURL := flag.StringP(directoryURLFlag, "d" ,"letsencrypt-prod", "acme directory URL of the CA. Following alias are defined: \"letsencrypt-prod\", \"letsencrypt-stage\" " )
-	email := flag.StringP(emailFlag,"e","", "email to be registered for the account" )
+	directoryURL := flag.StringP(directoryURLFlag, "d", "letsencrypt-prod", "acme directory URL of the CA. Following alias are defined: \"letsencrypt-prod\", \"letsencrypt-stage\" ")
+	email := flag.StringP(emailFlag, "e", "", "email to be registered for the account")
 	privateKeyPath := flag.StringP(privateKeyPathFlag, "k", "", "path to the private key in PKCS1/PKCS8 PEM format to be used. If an account with this private key exists, the account will be retrieved. This flag overrides the -g flag")
 	caRootCertPath := flag.StringP(caCertPathFlag, "c", "", "path to a custom CA root certificate. Only required for private/testing ACME CA's like pebble")
 	outputFilenamePrefix := flag.StringP(outputFileNamePrefixFlag, "o", "", "file name prefix to store the account details")
-	eabKeyID :=  flag.StringP(eabKeyIDFlag, "i", "", "key ID for external account binding")
-	eabHMACKey :=  flag.StringP(eabHMACKeyFlag, "h", "", "HMAC key for external account binding")
-	keyTypeToGenerate :=  flag.StringP(keyTypeToGenerateFlag, "g", "ec256", fmt.Sprintf("key type to generate. Supported values - %s, %s, %s, %s, %s", rsa2048, rsa3072, rsa4096, ec256, ec384))
+	eabKid := flag.StringP(eabKidFlag, "i", "", "key ID (KID) for external account binding (required for DigiCert)")
+	eabHmac := flag.StringP(eabHmacFlag, "m", "", "HMAC key for external account binding (required for DigiCert)")
+	keyTypeToGenerate := flag.StringP(keyTypeToGenerateFlag, "g", "ec256", fmt.Sprintf("key type to generate. Supported values - %s, %s, %s, %s, %s", rsa2048, rsa3072, rsa4096, ec256, ec384))
 
 	ConfigureUsage()
 	flag.Parse()
@@ -503,16 +502,35 @@ func main() {
 	ExitIfStringFlagNotProvided(outputFileNamePrefixFlag, *outputFilenamePrefix)
 
 	privateKeyOutputFilename := *outputFilenamePrefix + outputPrivateKeyFileNameSuffix
-	if IsFileExists(privateKeyOutputFilename){
+	if IsFileExists(privateKeyOutputFilename) {
 		log.Fatalf("File already exists: %s ", privateKeyOutputFilename)
 	}
 	accountInfoOutputFilename := *outputFilenamePrefix + outputAccountInfoFileNameSuffix
-	if IsFileExists(accountInfoOutputFilename){
+	if IsFileExists(accountInfoOutputFilename) {
 		log.Fatalf("File already exists: %s", accountInfoOutputFilename)
 	}
 
-	if val, ok := directoryAlias[*directoryURL]; ok {
-		*directoryURL = val
+	// Check if EAB parameters are provided (indicates DigiCert usage)
+	if *eabKid != "" || *eabHmac != "" {
+		// If EAB is provided, ensure both are present
+		if *eabKid == "" || *eabHmac == "" {
+			log.Fatal("Both -i (KID) and -m (HMAC key) flags must be provided together for External Account Binding.")
+		}
+
+		// Ensure the directory URL is not a Let's Encrypt alias when using EAB
+		if _, isAlias := directoryAlias[*directoryURL]; isAlias {
+			log.Fatal("When using External Account Binding (for DigiCert), you must provide the full directory URL, not a Let's Encrypt alias.")
+		}
+
+		// Validate it's a proper HTTPS URL format
+		if !strings.HasPrefix(*directoryURL, "https://") {
+			log.Fatal("When using External Account Binding (for DigiCert), the directory URL must be a full HTTPS URL starting with https://")
+		}
+	} else {
+		// No EAB provided, so resolve Let's Encrypt aliases
+		if val, ok := directoryAlias[*directoryURL]; ok {
+			*directoryURL = val
+		}
 	}
 
 	privateKey, isKeyGenerated, err := ImportOrGeneratePrivateKey(*privateKeyPath, *keyTypeToGenerate)
@@ -527,8 +545,8 @@ func main() {
 		key:                  privateKey,
 		isKeyGenerated:       isKeyGenerated,
 		TermsOfServiceAgreed: true,
-		EabKeyID: 			  *eabKeyID,
-		EabHMACKey: 		  *eabHMACKey,
+		EabKeyID:             *eabKid,
+		EabHMACKey:           *eabHmac,
 	}
 
 	err = CreateAccountIfNotExists(accountConfig)
